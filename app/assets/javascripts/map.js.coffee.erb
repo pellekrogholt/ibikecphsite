@@ -2,7 +2,7 @@
 # listed below.
 #
 # Any JavaScript/Coffee file within this directory, lib/assets/javascripts, vendor/assets/javascripts,
-# or vendor/assets/javascripts of plugins, if any, can be referenced here using a relative path.
+# or vendor/assets/javascripts of plug$ins, if any, can be referenced here using a relative path.
 #
 # It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
 # the compiled file.
@@ -11,9 +11,10 @@
 # GO AFTER THE REQUIRES BELOW.
 #= require jquery
 #= require jquery_ujs
+#= require jquery-ui
 #= require underscore_min
 #= require backbone_min
-#= require leaflet-src
+#= require leaflet
 #= require leaflet/L.Control.Goto
 #= require i18n
 #= require i18n/translations
@@ -41,5 +42,55 @@
 #= require_tree ./templates
 #= require_tree ./views
 
+
+ibikecph.util.setSelectionRange = (input, selectionStart, selectionEnd) ->
+  if input.setSelectionRange
+    input.focus()
+    input.setSelectionRange selectionStart, selectionEnd
+  else if input.createTextRange
+    range = input.createTextRange()
+    range.collapse true
+    range.moveEnd 'character', selectionEnd
+    range.moveStart 'character', selectionStart
+    range.select()
+
+ibikecph.util.setCaretToPos = (input, pos) ->
+  ibikecph.util.setSelectionRange input, pos, pos
+
+
 jQuery ->
-	ibikecph.app.start()
+    ibikecph.app.start()
+
+    position = 0
+
+       
+    $('input.from, input.to').autocomplete
+        minLength: 2,
+        source: (request, response) ->
+            $.ajax
+                type: "GET",
+                url: 'http://geo.oiorest.dk/adresser.json',
+                dataType: "jsonp",
+                data:  { q: request.term, maxantal: 10 },
+                success: (data) ->
+                    suggestions = []
+                    $(data).each (i, val) ->
+                        nr = ' ' + val.husnr
+                        text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
+                        suggestions.push text
+                    response suggestions
+                ,
+                error: (textStatus) ->
+                    alert "Fejl: " + textStatus
+        ,
+        select: (event, ui) ->
+            position = ui.item.value.indexOf(',')
+            re = /(\D+)(\d*), (\d+)(\D+)/
+            result = re.exec(ui.item.value)
+        ,
+        close: (event, ui) ->
+            if position > 0
+                ibikecph.util.setCaretToPos $(this)[0], position
+                position = 0
+            
+            $(this).fields_updated
