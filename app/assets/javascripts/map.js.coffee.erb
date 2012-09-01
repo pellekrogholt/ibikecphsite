@@ -76,7 +76,11 @@ jQuery ->
                     suggestions = []
                     $(data).each (i, val) ->
                         nr = ' ' + val.husnr
-                        text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
+						
+			            #should really use the location to set the marker, instead of doing a reverse lookup
+						#at the moment, the reverse lookup fails, because nominatim doesn't understand zip codes or kbh N (or we're using is incorrectly)
+                        #text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
+                        text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.navn}"
                         suggestions.push text
                     response suggestions
                 ,
@@ -92,5 +96,5 @@ jQuery ->
             if position > 0
                 ibikecph.util.setCaretToPos $(this)[0], position
                 position = 0
-            
-            $(this).fields_updated
+			#it would be nice if a the locaation could be indicated on the map when the user hovers over a suggested address
+            #$(this).fields_updated
