@@ -1,11 +1,42 @@
 ibikecph.app = app = {}
 
-$(window).bind 'resize', ->
-	$('#map').height $(window).height() - $('#header').height()
-
-
 app.start = ->
 	app.start = -> null
+
+	$('.address input').autocomplete
+		minLength: 2,
+		source: (request, response) ->
+			$.ajax
+				type: "GET",
+				url: 'http://geo.oiorest.dk/adresser.json',
+				dataType: "jsonp",
+				data:  { q: request.term, maxantal: 5 },
+				success: (data) ->
+					suggestions = []
+					$(data).each (i, val) ->
+						if val.husnr
+							nr = ' ' + val.husnr
+						else
+							nr = ' '
+						text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
+						suggestions.push text
+					response suggestions
+				,
+				error: (textStatus) ->
+					alert "Fejl: " + textStatus
+		,
+		select: (event, ui) ->
+		,
+		close: (event, ui) ->
+			str = $(this)[0].value
+			pattern = /(\d+[A-Za-zÆØÅæøå0]*\s*)?,/
+			from = str.search pattern
+			to = str.indexOf(',')
+			if from == -1
+				$(this).selectRange to, to	  # no street nr, set carret position
+			else
+				$(this).selectRange from, to	# select street nr
+			$(this).fields_updated
 
 	app.info = new ibikecph.Info
 
@@ -24,12 +55,12 @@ app.start = ->
 
 	app.sidebar = new ibikecph.Sidebar
 		model : app.info
-		el    : '#ui'
+		el	: '#ui'
 		app   : app
 
 	app.map = new ibikecph.Map
 		model : app.info
-		el    : '#map'
+		el	: '#map'
 		app   : app
 
 	app.map.on 'zoom', (event) =>
@@ -47,5 +78,3 @@ app.start = ->
 		event.preventDefault()
 		href = $(this).attr('href') + $('.permalink').attr('href')
 		window.location = href
-
-	$(window).trigger 'resize'

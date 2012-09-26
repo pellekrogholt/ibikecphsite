@@ -30,9 +30,9 @@ body {
 	box-shadow: 0px 5px 5px rgba(0,0,0,.5);
 	top: 10px;
 	left: 10px;
-    padding: $half_gutter - 2*$border_width;
-    border-radius: 4px;
-    border: $border_width solid $lightish;
+	padding: $half_gutter - 2*$border_width;
+	border-radius: 4px;
+	border: $border_width solid $lightish;
 	background: $light;
 	&.hidden {
 		width: 16px;
@@ -140,7 +140,7 @@ body {
 }
 .leaflet-control {
 	background-color: white;
-    border: $border_width solid $lightish;
+	border: $border_width solid $lightish;
 	border-radius: 4px;
 	box-shadow: 0px 5px 5px rgba(0,0,0,.5);
 }
@@ -173,11 +173,12 @@ body {
 :-ms-input-placeholder {
 	color: #ddd;
 }
-
-input.ui-autocomplete-input {
-    ul.ui-autocomplete {
-    }
-
-    li.ui-menu-item {
-    }
-}
+.ui-autocomplete {
+	font-size: 0.9em;
+	background-color: #ffe;
+	color: black;
+	a#ui-active-menuitem {
+		background-color: $color;
+		color: white;
+	}
+}	

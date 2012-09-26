@@ -12,6 +12,7 @@
 #= require jquery
 #= require jquery_ujs
 #= require jquery-ui
+#= require jquery.timeago
 #= require underscore_min
 #= require backbone_min
 #= require leaflet
@@ -41,60 +42,7 @@
 #= require_tree ./models
 #= require_tree ./templates
 #= require_tree ./views
-
-
-ibikecph.util.setSelectionRange = (input, selectionStart, selectionEnd) ->
-  if input.setSelectionRange
-    input.focus()
-    input.setSelectionRange selectionStart, selectionEnd
-  else if input.createTextRange
-    range = input.createTextRange()
-    range.collapse true
-    range.moveEnd 'character', selectionEnd
-    range.moveStart 'character', selectionStart
-    range.select()
-
-ibikecph.util.setCaretToPos = (input, pos) ->
-  ibikecph.util.setSelectionRange input, pos, pos
-
+#= require_tree ./utils
 
 jQuery ->
     ibikecph.app.start()
-
-    position = 0
-
-       
-    $('input.from, input.to').autocomplete
-        minLength: 2,
-        source: (request, response) ->
-            $.ajax
-                type: "GET",
-                url: 'http://geo.oiorest.dk/adresser.json',
-                dataType: "jsonp",
-                data:  { q: request.term, maxantal: 10 },
-                success: (data) ->
-                    suggestions = []
-                    $(data).each (i, val) ->
-                        nr = ' ' + val.husnr
-						
-			            #should really use the location to set the marker, instead of doing a reverse lookup
-						#at the moment, the reverse lookup fails, because nominatim doesn't understand zip codes or kbh N (or we're using is incorrectly)
-                        #text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
-                        text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.navn}"
-                        suggestions.push text
-                    response suggestions
-                ,
-                error: (textStatus) ->
-                    alert "Fejl: " + textStatus
-        ,
-        select: (event, ui) ->
-            position = ui.item.value.indexOf(',')
-            re = /(\D+)(\d*), (\d+)(\D+)/
-            result = re.exec(ui.item.value)
-        ,
-        close: (event, ui) ->
-            if position > 0
-                ibikecph.util.setCaretToPos $(this)[0], position
-                position = 0
-			#it would be nice if a the locaation could be indicated on the map when the user hovers over a suggested address
-            #$(this).fields_updated
