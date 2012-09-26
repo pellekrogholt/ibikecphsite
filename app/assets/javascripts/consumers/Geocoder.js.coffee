@@ -42,9 +42,10 @@ class ibikecph.Geocoder
 			value
 
 	load_address: (new_address) ->
+		console.log "load_adresss"
 		return if new_address == @current.address
 		@current.address = new_address
-
+		
 		unless @current.address
 			@current.location.lat = null
 			@current.location.lng = null
@@ -52,25 +53,34 @@ class ibikecph.Geocoder
 			@model.trigger 'change:location', @model, @current.location, {}
 			@model.trigger 'change', @model
 			return
+		
+		pattern = /\s*(.+?)\s+(\w*),\s*(\d+)/
+		result = pattern.exec new_address
+		if result
+			#console.log result
+			options = {
+			 	vejnavn: result[1],
+				husnr: result[2],
+				postnr: result[3]
+			}
 
-		@request_init()
-
-		options = _.extend
-			format : 'json'
-			q      : "#{@current.address}"
-			limit  : '1'
-		, ibikecph.config.geocoding_service.options
-
-		@request = $.getJSON ibikecph.config.geocoding_service.url + '?json_callback=?', options, (result) =>
-			@request_done()
-
-			@current.location.lat = @convert_number result[0]?.lat
-			@current.location.lng = @convert_number result[0]?.lon
-			@model.set 'location', @current.location
-			@model.trigger 'change:location', @model, @current.location, {}
-			@model.trigger 'change', @model
+			@request_init()
+			$.ajax 'http://geo.oiorest.dk/adresser.json',
+				type: 'GET'
+				dataType: 'jsonp'
+				data: options
+				cache: true
+				success: (data, textStatus, jqXHR) =>
+					@current.location.lat = @convert_number data[0].wgs84koordinat.bredde
+					@current.location.lng = @convert_number data[0].wgs84koordinat.længde
+					@model.set 'location', @current.location
+					@model.trigger 'change:location', @model, @current.location, {}
+					@model.trigger 'change', @model
+					@request_done()
 
 	load_location: (new_location) ->
+		return
+		console.log "load_location"
 		return if new_location?.lat == @current.location.lat and new_location?.lng == @current.location.lng
 
 		@current.location.lat = new_location?.lat
