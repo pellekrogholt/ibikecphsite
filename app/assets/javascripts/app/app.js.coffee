@@ -17,7 +17,7 @@ app.start = ->
 						if val.husnr
 							nr = ' ' + val.husnr
 						else
-							nr = ' '
+							nr = ' 1'
 						text =  "#{val.vejnavn.navn+nr}, #{val.postnummer.nr} #{val.postnummer.navn}"
 						suggestions.push text
 					response suggestions

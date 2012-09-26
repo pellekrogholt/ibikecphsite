@@ -43,25 +43,27 @@ class ibikecph.Geocoder
 
 	load_address: (new_address) ->
 		console.log "load_adresss"
-		return if new_address == @current.address
+		#return if new_address == @current.address
 		@current.address = new_address
 		
-		unless @current.address
-			@current.location.lat = null
-			@current.location.lng = null
-			@model.set 'location', @current.location
-			@model.trigger 'change:location', @model, @current.location, {}
-			@model.trigger 'change', @model
-			return
+		#unless @current.address
+		#	@current.location.lat = null
+		#	@current.location.lng = null
+		#	@model.set 'location', @current.location
+		#	@model.trigger 'change:location', @model, @current.location, {}
+		#	@model.trigger 'change', @model
+		#	return
 		
-		pattern = /\s*(.+?)\s+(\w*),\s*(\d+)/
+		console.log new_address
+		pattern = /(.+?)(\s+(\w*))?,\s*(\d+)\s*/
 		result = pattern.exec new_address
 		if result
+			console.log 'regex OK'
 			#console.log result
 			options = {
 			 	vejnavn: result[1],
-				husnr: result[2],
-				postnr: result[3]
+				husnr: result[3],
+				postnr: result[4]
 			}
 
 			@request_init()
@@ -71,11 +73,12 @@ class ibikecph.Geocoder
 				data: options
 				cache: true
 				success: (data, textStatus, jqXHR) =>
-					@current.location.lat = @convert_number data[0].wgs84koordinat.bredde
-					@current.location.lng = @convert_number data[0].wgs84koordinat.længde
-					@model.set 'location', @current.location
-					@model.trigger 'change:location', @model, @current.location, {}
-					@model.trigger 'change', @model
+					if data && data[0]
+						@current.location.lat = @convert_number data[0].wgs84koordinat.bredde
+						@current.location.lng = @convert_number data[0].wgs84koordinat.længde
+						@model.set 'location', @current.location
+						@model.trigger 'change:location', @model, @current.location, {}
+						@model.trigger 'change', @model
 					@request_done()
 
 	load_location: (new_location) ->
